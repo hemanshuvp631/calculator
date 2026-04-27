@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculator | Hemanshuvp_631</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Caveat:wght@400;600&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f5e6d3;
+      font-family: 'Patrick Hand', cursive;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Notebook-style background lines */
+    body::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(
+        transparent,
+        transparent 31px,
+        #e0c9b0 31px,
+        #e0c9b0 32px
+      );
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    /* Random doodle circles in the background */
+    .doodle {
+      position: absolute;
+      border: 2px dashed;
+      border-radius: 50%;
+      opacity: 0.15;
+      pointer-events: none;
+    }
+
+    .doodle:nth-child(1) {
+      width: 120px; height: 120px;
+      top: 8%; left: 5%;
+      border-color: #e07b53;
+      transform: rotate(-12deg);
+    }
+    .doodle:nth-child(2) {
+      width: 80px; height: 80px;
+      top: 70%; left: 10%;
+      border-color: #5b8a72;
+      transform: rotate(20deg);
+    }
+    .doodle:nth-child(3) {
+      width: 150px; height: 150px;
+      top: 15%; right: 8%;
+      border-color: #c9a227;
+      transform: rotate(8deg);
+    }
+    .doodle:nth-child(4) {
+      width: 60px; height: 60px;
+      bottom: 12%; right: 15%;
+      border-color: #7b68ae;
+      transform: rotate(-25deg);
+    }
+    .doodle:nth-child(5) {
+      width: 100px; height: 100px;
+      bottom: 25%; left: 25%;
+      border-color: #d4726a;
+      border-style: dotted;
+      transform: rotate(15deg);
+    }
+
+    .calculator {
+      background: #fdf8f0;
+      border-radius: 18px;
+      padding: 22px;
+      border: 2.5px solid #c4a882;
+      width: 330px;
+      position: relative;
+      box-shadow:
+        4px 4px 0px #c4a882,
+        8px 8px 20px rgba(0,0,0,0.12);
+      transform: rotate(-1.2deg);
+    }
+
+    /* Tape strips on top */
+    .calculator::before,
+    .calculator::after {
+      content: '';
+      position: absolute;
+      width: 60px;
+      height: 22px;
+      background: rgba(255, 228, 150, 0.7);
+      top: -11px;
+      transform: rotate(-3deg);
+      border: 1px solid rgba(200, 180, 100, 0.4);
+    }
+    .calculator::before { left: 30px; transform: rotate(-4deg); }
+    .calculator::after { right: 30px; transform: rotate(2deg); }
+
+    /* Title scribble */
+    .calc-title {
+      text-align: center;
+      font-family: 'Caveat', cursive;
+      font-size: 20px;
+      color: #7b68ae;
+      margin-bottom: 10px;
+      transform: rotate(0.8deg);
+      letter-spacing: 1px;
+    }
+
+    .display {
+      background: #e8f5e9;
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 18px;
+      text-align: right;
+      border: 2px solid #a5c9a0;
+      position: relative;
+      transform: rotate(0.3deg);
+    }
+
+    /* Small arrow doodle near display */
+    .display::after {
+      content: '↓';
+      position: absolute;
+      bottom: -18px;
+      right: 20px;
+      font-size: 14px;
+      color: #a5c9a0;
+      opacity: 0.5;
+    }
+
+    .display .expression {
+      color: #6d8b74;
+      font-size: 15px;
+      min-height: 20px;
+      margin-bottom: 6px;
+      word-break: break-all;
+      font-family: 'Caveat', cursive;
+    }
+
+    .display .result {
+      color: #2d5a3d;
+      font-size: 34px;
+      font-weight: 600;
+      word-break: break-all;
+      font-family: 'Caveat', cursive;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      padding: 16px;
+      border: 2px solid;
+      border-radius: 10px;
+      font-size: 18px;
+      font-family: 'Patrick Hand', cursive;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.12s ease;
+      outline: none;
+      position: relative;
+    }
+
+    button:active {
+      transform: scale(0.9) rotate(-2deg);
+    }
+
+    /* Number buttons — warm beige/peach tones, each slightly different */
+    .btn-num {
+      background: #fef3e2;
+      color: #5c4033;
+      border-color: #ddc9a3;
+    }
+    .btn-num:nth-child(odd) {
+      background: #fff8ed;
+      transform: rotate(0.5deg);
+    }
+    .btn-num:nth-child(even) {
+      transform: rotate(-0.4deg);
+    }
+    .btn-num:hover {
+      background: #ffe8c8;
+      box-shadow: 2px 2px 0px #ddc9a3;
+    }
+
+    /* Operator buttons — mismatched warm colors */
+    .btn-op {
+      border-color: #d4726a;
+      color: #fff;
+    }
+    .btn-op:nth-child(4) {
+      background: #e07b53;
+      border-color: #c96843;
+      transform: rotate(1.5deg);
+    }
+    .btn-op:nth-child(8) {
+      background: #d4726a;
+      border-color: #bf5f58;
+      transform: rotate(-1deg);
+    }
+    .btn-op:nth-child(12) {
+      background: #c95d50;
+      border-color: #b04a3e;
+      transform: rotate(0.8deg);
+    }
+    .btn-op:nth-child(16) {
+      background: #e8956d;
+      border-color: #d07d55;
+      transform: rotate(-1.5deg);
+    }
+    .btn-op:hover {
+      filter: brightness(1.1);
+      box-shadow: 2px 2px 0px rgba(0,0,0,0.15);
+    }
+
+    /* Equals button — muted teal */
+    .btn-eq {
+      background: #5b8a72;
+      color: #fff;
+      border-color: #4a7560;
+      grid-column: span 2;
+      transform: rotate(-0.6deg);
+      font-size: 22px;
+    }
+    .btn-eq:hover {
+      background: #6d9e83;
+      box-shadow: 2px 2px 0px #4a7560;
+    }
+
+    /* Utility buttons — each a different muted color */
+    button:nth-child(1).btn-util {
+      background: #c9a227;
+      color: #fff;
+      border-color: #b08f1f;
+      transform: rotate(-1deg);
+    }
+    button:nth-child(2).btn-util {
+      background: #7b68ae;
+      color: #fff;
+      border-color: #6a589c;
+      transform: rotate(1.2deg);
+    }
+    button:nth-child(3).btn-util {
+      background: #5a9bb5;
+      color: #fff;
+      border-color: #4889a1;
+      transform: rotate(-0.7deg);
+    }
+    .btn-util:hover {
+      filter: brightness(1.1);
+      box-shadow: 2px 2px 0px rgba(0,0,0,0.15);
+    }
+
+    /* Zero button spans 2 cols */
+    .btn-zero {
+      grid-column: span 2;
+    }
+
+    /* Watermark credit */
+    .credit {
+      position: fixed;
+      bottom: 14px;
+      right: 18px;
+      font-family: 'Caveat', cursive;
+      font-size: 15px;
+      color: #a08c72;
+      transform: rotate(-2deg);
+      opacity: 0.85;
+      letter-spacing: 0.5px;
+    }
+    .credit span {
+      color: #d4726a;
+      font-weight: 600;
+      font-size: 17px;
+    }
+
+    /* Tiny star doodle near credit */
+    .credit::before {
+      content: '✦';
+      margin-right: 5px;
+      font-size: 10px;
+      color: #c9a227;
+    }
+
+    /* Random underline scribble on credit */
+    .credit::after {
+      content: '';
+      display: block;
+      width: 100%;
+      height: 2px;
+      background: repeating-linear-gradient(
+        90deg,
+        #d4726a 0px,
+        #d4726a 4px,
+        transparent 4px,
+        transparent 7px
+      );
+      margin-top: 2px;
+      opacity: 0.5;
+    }
+
+    /* Small scribble annotations */
+    .annotation {
+      position: absolute;
+      font-family: 'Caveat', cursive;
+      color: #b5a08a;
+      font-size: 12px;
+      opacity: 0.45;
+      pointer-events: none;
+    }
+    .annotation-1 { top: 55px; left: -55px; transform: rotate(-90deg); }
+    .annotation-2 { bottom: -25px; right: 10px; transform: rotate(2deg); }
+
+  </style>
+</head>
+<body>
+
+  <!-- Background doodles -->
+  <div class="doodle"></div>
+  <div class="doodle"></div>
+  <div class="doodle"></div>
+  <div class="doodle"></div>
+  <div class="doodle"></div>
+
+  <div class="calculator">
+    <div class="annotation annotation-1">my calculator →</div>
+    <div class="annotation annotation-2">~ works most of the time lol ~</div>
+
+    <div class="calc-title">~ my lil calculator ~</div>
+
+    <div class="display">
+      <div class="expression" id="expression"></div>
+      <div class="result" id="result">0</div>
+    </div>
+
+    <div class="buttons">
+      <!-- Row 1 -->
+      <button class="btn-util" onclick="clearAll()">AC</button>
+      <button class="btn-util" onclick="toggleSign()">+/-</button>
+      <button class="btn-util" onclick="percentage()">%</button>
+      <button class="btn-op"   onclick="setOperator('/')">÷</button>
+
+      <!-- Row 2 -->
+      <button class="btn-num" onclick="appendNumber('7')">7</button>
+      <button class="btn-num" onclick="appendNumber('8')">8</button>
+      <button class="btn-num" onclick="appendNumber('9')">9</button>
+      <button class="btn-op"  onclick="setOperator('*')">×</button>
+
+      <!-- Row 3 -->
+      <button class="btn-num" onclick="appendNumber('4')">4</button>
+      <button class="btn-num" onclick="appendNumber('5')">5</button>
+      <button class="btn-num" onclick="appendNumber('6')">6</button>
+      <button class="btn-op"  onclick="setOperator('-')">−</button>
+
+      <!-- Row 4 -->
+      <button class="btn-num" onclick="appendNumber('1')">1</button>
+      <button class="btn-num" onclick="appendNumber('2')">2</button>
+      <button class="btn-num" onclick="appendNumber('3')">3</button>
+      <button class="btn-op"  onclick="setOperator('+')">+</button>
+
+      <!-- Row 5 -->
+      <button class="btn-num btn-zero" onclick="appendNumber('0')">0</button>
+      <button class="btn-num" onclick="appendDecimal()">.</button>
+      <button class="btn-eq"  onclick="calculate()">=</button>
+    </div>
+  </div>
+
+  <div class="credit">made by - <span>Hemanshuvp_631</span></div>
+
+  <script>
+    let currentInput  = '';
+    let previousInput = '';
+    let operator      = null;
+    let shouldReset   = false;
+
+    const resultEl     = document.getElementById('result');
+    const expressionEl = document.getElementById('expression');
+
+    function updateDisplay(value) {
+      resultEl.textContent = value;
+    }
+
+    function appendNumber(num) {
+      if (shouldReset) {
+        currentInput = '';
+        shouldReset  = false;
+      }
+      if (currentInput.length >= 12) return;
+      currentInput += num;
+      updateDisplay(currentInput);
+    }
+
+    function appendDecimal() {
+      if (shouldReset) {
+        currentInput = '0';
+        shouldReset  = false;
+      }
+      if (currentInput.includes('.')) return;
+      if (currentInput === '') currentInput = '0';
+      currentInput += '.';
+      updateDisplay(currentInput);
+    }
+
+    function setOperator(op) {
+      if (currentInput === '' && previousInput === '') return;
+
+      if (currentInput !== '' && previousInput !== '' && operator) {
+        calculate(true);
+      }
+
+      previousInput = currentInput || previousInput;
+      operator      = op;
+      currentInput  = '';
+
+      const opSymbols = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+      expressionEl.textContent = `${previousInput} ${opSymbols[op]}`;
+    }
+
+    function calculate(chain = false) {
+      if (operator === null || previousInput === '') return;
+      if (currentInput === '' && !chain) return;
+
+      const a   = parseFloat(previousInput);
+      const b   = parseFloat(currentInput || previousInput);
+      let result;
+
+      switch (operator) {
+        case '+': result = a + b; break;
+        case '-': result = a - b; break;
+        case '*': result = a * b; break;
+        case '/':
+          if (b === 0) {
+            updateDisplay('oops ÷0 !');
+            expressionEl.textContent = '';
+            currentInput = previousInput = '';
+            operator = null;
+            return;
+          }
+          result = a / b;
+          break;
+      }
+
+      result = parseFloat(result.toFixed(10));
+
+      if (!chain) {
+        const opSymbols = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+        expressionEl.textContent =
+          `${previousInput} ${opSymbols[operator]} ${currentInput} =`;
+      }
+
+      updateDisplay(result);
+      currentInput  = String(result);
+      previousInput = '';
+      operator      = null;
+      shouldReset   = !chain;
+    }
+
+    function clearAll() {
+      currentInput  = '';
+      previousInput = '';
+      operator      = null;
+      shouldReset   = false;
+      updateDisplay('0');
+      expressionEl.textContent = '';
+    }
+
+    function toggleSign() {
+      if (!currentInput || currentInput === '0') return;
+      currentInput = String(parseFloat(currentInput) * -1);
+      updateDisplay(currentInput);
+    }
+
+    function percentage() {
+      if (!currentInput) return;
+      currentInput = String(parseFloat(currentInput) / 100);
+      updateDisplay(currentInput);
+    }
+
+    // Keyboard support
+    document.addEventListener('keydown', (e) => {
+      if (e.key >= '0' && e.key <= '9') appendNumber(e.key);
+      else if (e.key === '.')  appendDecimal();
+      else if (e.key === '+')  setOperator('+');
+      else if (e.key === '-')  setOperator('-');
+      else if (e.key === '*')  setOperator('*');
+      else if (e.key === '/')  { e.preventDefault(); setOperator('/'); }
+      else if (e.key === 'Enter' || e.key === '=') calculate();
+      else if (e.key === 'Escape') clearAll();
+      else if (e.key === '%')  percentage();
+      else if (e.key === 'Backspace') {
+        currentInput = currentInput.slice(0, -1);
+        updateDisplay(currentInput || '0');
+      }
+    });
+  </script>
+
+</body>
+</html>
